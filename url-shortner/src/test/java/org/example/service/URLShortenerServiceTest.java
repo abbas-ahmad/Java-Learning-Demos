@@ -3,10 +3,12 @@ package org.example.service;
 import org.example.repository.URLRepository;
 import org.example.service.ShortCodeGenerator;
 import org.example.model.URLMapping;
+import org.example.util.UrlValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import javax.xml.validation.Validator;
 import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -36,14 +38,21 @@ class URLShortenerServiceTest {
      */
     @Test
     void testShortenUrlReturnsShortCode() {
-        String longUrl = "https://example.com/abc";
+        String longUrl = "https://example.com/abc"; // Use a valid URL for positive test
         String shortCode = "xyz123";
         when(generator.generateShortCode(longUrl)).thenReturn(shortCode);
         when(repository.findByLongUrl(longUrl)).thenReturn(null);
 
+
         String result = service.shortenUrl(longUrl);
         assertEquals(shortCode, result);
         verify(repository).save(any(URLMapping.class));
+    }
+
+    @Test
+    void testShortenUrlThrowsForInvalidUrl() {
+        String invalidUrl = "htt://example.com/abc"; // Invalid protocol
+        assertThrows(IllegalArgumentException.class, () -> service.shortenUrl(invalidUrl));
     }
 
     /**
@@ -175,4 +184,3 @@ class URLShortenerServiceTest {
         assertNull(originalUrl);
     }
 }
-

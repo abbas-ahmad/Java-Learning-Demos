@@ -4,8 +4,6 @@ import org.example.model.URLMapping;
 import org.example.repository.URLRepository;
 import org.example.util.UrlValidator;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.time.LocalDateTime;
 
 /**
