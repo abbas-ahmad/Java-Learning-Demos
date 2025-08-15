@@ -19,17 +19,30 @@ public class URLMapping {
      * The timestamp when the mapping was created.
      */
     private final LocalDateTime createdAt;
+    /**
+     * The timestamp when the mapping expires (optional, may be null for no expiry).
+     */
+    private final LocalDateTime expiresAt;
 
     /**
-     * Constructs a new URLMapping.
+     * Constructs a new URLMapping with expiry.
      * @param shortCode the unique short code
      * @param longUrl the original long URL
      * @param createdAt the creation timestamp
+     * @param expiresAt the expiry timestamp (nullable)
      */
-    public URLMapping(String shortCode, String longUrl, LocalDateTime createdAt) {
+    public URLMapping(String shortCode, String longUrl, LocalDateTime createdAt, LocalDateTime expiresAt) {
         this.shortCode = shortCode;
         this.longUrl = longUrl;
         this.createdAt = createdAt;
+        this.expiresAt = expiresAt;
+    }
+
+    /**
+     * Backward compatible constructor (no expiry).
+     */
+    public URLMapping(String shortCode, String longUrl, LocalDateTime createdAt) {
+        this(shortCode, longUrl, createdAt, null);
     }
 
     /**
@@ -54,5 +67,19 @@ public class URLMapping {
      */
     public LocalDateTime getCreatedAt() {
         return createdAt;
+    }
+
+    /**
+     * Gets the expiry timestamp (nullable).
+     */
+    public LocalDateTime getExpiresAt() {
+        return expiresAt;
+    }
+
+    /**
+     * Returns true if this mapping is expired (now > expiresAt), false otherwise or if no expiry.
+     */
+    public boolean isExpired() {
+        return expiresAt != null && LocalDateTime.now().isAfter(expiresAt);
     }
 }

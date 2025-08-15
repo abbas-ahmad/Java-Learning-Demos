@@ -36,11 +36,20 @@ public class URLShortenerServiceImpl implements URLShortenerService {
      */
     @Override
     public String shortenUrl(String longUrl) {
+        // Backward compatible: no expiry
+        return shortenUrl(longUrl, null);
+    }
+
+    @Override
+    public String shortenUrl(String longUrl, LocalDateTime expiresAt) {
         URLMapping existing = repository.findByLongUrl(longUrl);
         if (existing != null) {
-            return existing.getShortCode();
+            // If the existing mapping is expired, allow re-shortening
+            if (!existing.isExpired()) {
+                return existing.getShortCode();
+            }
         }
-
+        // Generate a new short code
         String shortCode = generator.generateShortCode(longUrl);
         int maxAttempts = 10;
         int attempts = 1;
@@ -51,7 +60,7 @@ public class URLShortenerServiceImpl implements URLShortenerService {
         if (repository.findByShortCode(shortCode) != null) {
             throw new IllegalStateException("Failed to generate a unique short code after " + maxAttempts + " attempts");
         }
-        URLMapping mapping = new URLMapping(shortCode, longUrl, LocalDateTime.now());
+        URLMapping mapping = new URLMapping(shortCode, longUrl, LocalDateTime.now(), expiresAt);
         repository.save(mapping);
         return shortCode;
     }
@@ -62,6 +71,9 @@ public class URLShortenerServiceImpl implements URLShortenerService {
     @Override
     public String getOriginalUrl(String shortCode) {
         URLMapping mapping = repository.findByShortCode(shortCode);
-        return mapping != null ? mapping.getLongUrl() : null;
+        if (mapping == null || mapping.isExpired()) {
+            return null;
+        }
+        return mapping.getLongUrl();
     }
 }

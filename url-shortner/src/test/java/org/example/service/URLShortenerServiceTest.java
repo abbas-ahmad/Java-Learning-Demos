@@ -135,4 +135,25 @@ class URLShortenerServiceTest {
 
         assertNull(originalUrl);
     }
+
+    @Test
+    void shouldReturnNewCodeWhenExistingCodeExpired(){
+        String longUrl = "https://example.com/expired";
+        String expiredCode = "expired";
+        String newCode = "newCode";
+        LocalDateTime expiredAt = LocalDateTime.now().minusMinutes(10);
+        when(repository.findByLongUrl(longUrl)).thenReturn(
+                new URLMapping(
+                            expiredCode,
+                            longUrl,
+                            LocalDateTime.now(),
+                            expiredAt)); // Set expiresAt in the past
+        when(generator.generateShortCode(longUrl)).thenReturn(newCode);
+        when(repository.findByShortCode(newCode)).thenReturn(null);
+
+        String shortedUrl = service.shortenUrl(longUrl);
+        assertNotNull(shortedUrl);
+        assertNotEquals(expiredCode, shortedUrl);
+        assertEquals(newCode, shortedUrl);
+    }
 }
