@@ -2,7 +2,10 @@ package org.example.service;
 
 import org.example.model.URLMapping;
 import org.example.repository.URLRepository;
+import org.example.util.UrlValidator;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.time.LocalDateTime;
 
 /**
@@ -36,12 +39,14 @@ public class URLShortenerServiceImpl implements URLShortenerService {
      */
     @Override
     public String shortenUrl(String longUrl) {
+        UrlValidator.validate(longUrl);
         // Backward compatible: no expiry
         return shortenUrl(longUrl, null);
     }
 
     @Override
     public String shortenUrl(String longUrl, LocalDateTime expiresAt) {
+        UrlValidator.validate(longUrl);
         URLMapping existing = repository.findByLongUrl(longUrl);
         if (existing != null) {
             // If the existing mapping is expired, allow re-shortening
