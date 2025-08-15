@@ -40,7 +40,17 @@ public class URLShortenerServiceImpl implements URLShortenerService {
         if (existing != null) {
             return existing.getShortCode();
         }
+
         String shortCode = generator.generateShortCode(longUrl);
+        int maxAttempts = 10;
+        int attempts = 1;
+        while (repository.findByShortCode(shortCode) != null && attempts < maxAttempts) {
+            shortCode = generator.generateShortCode(longUrl);
+            attempts++;
+        }
+        if (repository.findByShortCode(shortCode) != null) {
+            throw new IllegalStateException("Failed to generate a unique short code after " + maxAttempts + " attempts");
+        }
         URLMapping mapping = new URLMapping(shortCode, longUrl, LocalDateTime.now());
         repository.save(mapping);
         return shortCode;

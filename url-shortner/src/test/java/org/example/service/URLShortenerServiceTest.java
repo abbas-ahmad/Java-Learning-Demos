@@ -59,4 +59,80 @@ class URLShortenerServiceTest {
         String result = service.getOriginalUrl(shortCode);
         assertEquals(longUrl, result);
     }
+
+    /**
+     * Tests that shortenUrl retries if a generated short code collides, ensuring uniqueness.
+     */
+    @Test
+    void testShortenUrlRetriesOnCollision() {
+        String longUrl = "https://example.com/collision";
+        String duplicateCode = "dup123";
+        String uniqueCode = "uniq456";
+        // First generated code collides, second is unique
+        when(generator.generateShortCode(longUrl)).thenReturn(duplicateCode, uniqueCode);
+        when(repository.findByLongUrl(longUrl)).thenReturn(null);
+        when(repository.findByShortCode(duplicateCode)).thenReturn(new URLMapping(duplicateCode, "other", LocalDateTime.now()));
+        when(repository.findByShortCode(uniqueCode)).thenReturn(null);
+
+        String result = service.shortenUrl(longUrl);
+        assertEquals(uniqueCode, result);
+        verify(repository).save(any(URLMapping.class));
+        verify(generator, times(2)).generateShortCode(longUrl);
+    }
+
+    @Test
+    void shouldGiveExistingCodeIfAlreadyShortened(){
+        String existingUrl = "https://example.com/existing";
+        String existingCode = "existing123";
+
+        when(repository.findByLongUrl(existingUrl)).thenReturn(
+                new URLMapping(existingCode, existingUrl, LocalDateTime.now()));
+
+        String shortened = service.shortenUrl(existingUrl);
+
+        assertNotNull(shortened);
+        assertEquals(existingCode, shortened);
+    }
+
+    @Test
+    void shouldNotGiveExistingCodeIfNotShortened(){
+        String existingUrl = "https://example.com/existing";
+        String existingCode = "existing123";
+
+        when(repository.findByLongUrl(existingUrl)).thenReturn(
+                new URLMapping("newCode", existingUrl, LocalDateTime.now()));
+
+        String shortened = service.shortenUrl(existingUrl);
+
+        assertNotNull(shortened);
+        assertNotEquals(existingCode, shortened);
+        assertEquals("newCode", shortened);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenMaxAttemptsReached(){
+        String longUrl = "https://example.com/maxattempts";
+
+        when(repository.findByLongUrl(longUrl)).thenReturn(null);
+
+        String generatedShortCode = generator.generateShortCode(longUrl);
+
+        when(repository.findByShortCode(generatedShortCode)).thenReturn(
+                new URLMapping("existingCode", longUrl, LocalDateTime.now()));
+
+        assertThrows(IllegalStateException.class, () ->{
+            service.shortenUrl(longUrl);
+        });
+    }
+
+    @Test
+    void shouldReturnNullWhenCodeNotFound(){
+        String shortUrl = "notFound";
+
+        when(repository.findByShortCode(shortUrl)).thenReturn(null);
+
+        String originalUrl = service.getOriginalUrl(shortUrl);
+
+        assertNull(originalUrl);
+    }
 }
