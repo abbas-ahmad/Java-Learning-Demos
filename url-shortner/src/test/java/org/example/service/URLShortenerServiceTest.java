@@ -156,4 +156,22 @@ class URLShortenerServiceTest {
         assertNotEquals(expiredCode, shortedUrl);
         assertEquals(newCode, shortedUrl);
     }
+
+    @Test
+    void shouldReturnNullWhenCodeExpired(){
+        String shortCode = "expired";
+
+        URLMapping urlMapping = new URLMapping(
+                shortCode,
+                "Www.example.com/expired",
+                LocalDateTime.now(),
+                LocalDateTime.now().minusMinutes(10)
+        );
+
+        when(repository.findByShortCode(shortCode)).thenReturn(urlMapping);
+
+        String originalUrl = service.getOriginalUrl(shortCode);
+
+        assertNull(originalUrl);
+    }
 }
