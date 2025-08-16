@@ -22,13 +22,20 @@ public class InMemoryURLRepository implements URLRepository {
     private final Map<String, URLMapping> urlToMapping = new ConcurrentHashMap<>();
 
     /**
-     * Saves a URL mapping in both lookup maps.
+     * Lock object for synchronizing compound operations to ensure atomicity and consistency.
+     */
+    private final Object lock = new Object();
+
+    /**
+     * Saves a URL mapping in both lookup maps atomically.
      * @param mapping the URLMapping to save
      */
     @Override
     public void save(URLMapping mapping) {
-        codeToMapping.put(mapping.getShortCode(), mapping);
-        urlToMapping.put(mapping.getLongUrl(), mapping);
+        synchronized (lock) {
+            codeToMapping.put(mapping.getShortCode(), mapping);
+            urlToMapping.put(mapping.getLongUrl(), mapping);
+        }
     }
 
     /**
