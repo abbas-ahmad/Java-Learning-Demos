@@ -1,22 +1,21 @@
 package org.example.service;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Tests the generateShortCode method of SimpleShortCodeGenerator.
+ * This test checks if the method generates a short code that is not null or empty.
+ */
+@ExtendWith(MockitoExtension.class)
 class SimpleShortCodeGeneratorTest {
 
-    /**
-     * Tests the generateShortCode method of SimpleShortCodeGenerator.
-     * This test checks if the method generates a short code that is not null or empty.
-     */
-    private ShortCodeGenerator generator;
-
-    @BeforeEach
-    void setUp() {
-        generator = new SimpleShortCodeGenerator();
-    }
+    @InjectMocks
+    private SimpleShortCodeGenerator generator;
 
     @Test
     void shouldGenerateShortCode(){

@@ -7,6 +7,7 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.*;
 
 class RandomShortCodeGeneratorTest {
+
     @Test
     void generatesCodesOfCorrectLengthAndUniqueness() {
         int codeLength = 7;

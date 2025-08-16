@@ -1,14 +1,15 @@
 package org.example.service;
 
 import org.example.repository.URLRepository;
-import org.example.service.ShortCodeGenerator;
 import org.example.model.URLMapping;
 import org.example.util.UrlValidator;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 
-import javax.xml.validation.Validator;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -18,20 +19,17 @@ import static org.mockito.Mockito.*;
  * Unit tests for the URLShortenerService implementation.
  * Uses Mockito to mock dependencies and verify service behavior.
  */
-class URLShortenerServiceTest {
-    private URLRepository repository;
-    private ShortCodeGenerator generator;
-    private URLShortenerService service;
 
-    /**
-     * Sets up the test environment by mocking dependencies and initializing the service.
-     */
-    @BeforeEach
-    void setUp() {
-        repository = mock(URLRepository.class);
-        generator = mock(ShortCodeGenerator.class);
-        service = new URLShortenerServiceImpl(repository, generator);
-    }
+@ExtendWith(MockitoExtension.class)
+class URLShortenerServiceTest {
+    @Mock
+    private URLRepository repository;
+
+    @Mock
+    private ShortCodeGenerator generator;
+
+    @InjectMocks
+    private URLShortenerServiceImpl service;
 
     /**
      * Tests that shortenUrl returns the expected short code and saves the mapping.
@@ -182,5 +180,21 @@ class URLShortenerServiceTest {
         String originalUrl = service.getOriginalUrl(shortCode);
 
         assertNull(originalUrl);
+    }
+
+    @Test
+    void testShortenUrlWithInvalidUrlButSkipValidation() {
+        String invalidUrl = "htt://example.com/abc";
+        String shortCode = "xyz123";
+        when(generator.generateShortCode(invalidUrl)).thenReturn(shortCode);
+        when(repository.findByLongUrl(invalidUrl)).thenReturn(null);
+
+        // Use Mockito's MockedStatic to skip validation (doNothing equivalent)
+        try (org.mockito.MockedStatic<UrlValidator> mocked = org.mockito.Mockito.mockStatic(UrlValidator.class)) {
+            mocked.when(() -> UrlValidator.validate(anyString())).thenAnswer(invocation -> null); // doNothing for any input
+            String result = service.shortenUrl(invalidUrl);
+            assertEquals(shortCode, result);
+            verify(repository).save(any(URLMapping.class));
+        }
     }
 }
