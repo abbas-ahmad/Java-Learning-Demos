@@ -4,6 +4,8 @@ import org.example.model.URLMapping;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * In-memory implementation of the URLRepository interface.
@@ -20,21 +22,23 @@ public class InMemoryURLRepository implements URLRepository {
      * Maps long URLs to URLMapping objects for fast lookup by original URL.
      */
     private final Map<String, URLMapping> urlToMapping = new ConcurrentHashMap<>();
-
     /**
-     * Lock object for synchronizing compound operations to ensure atomicity and consistency.
+     * Lock for synchronizing access to the repository.
      */
-    private final Object lock = new Object();
+    private final Lock lock = new ReentrantLock();
 
     /**
-     * Saves a URL mapping in both lookup maps atomically.
+     * Saves a URL mapping in both lookup maps.
      * @param mapping the URLMapping to save
      */
     @Override
     public void save(URLMapping mapping) {
-        synchronized (lock) {
+        lock.lock();
+        try {
             codeToMapping.put(mapping.getShortCode(), mapping);
             urlToMapping.put(mapping.getLongUrl(), mapping);
+        } finally {
+            lock.unlock();
         }
     }
 

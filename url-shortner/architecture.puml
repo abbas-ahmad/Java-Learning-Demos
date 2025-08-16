@@ -1,0 +1,18 @@
+@startuml
+!define RECTANGLE class
+
+RECTANGLE User
+RECTANGLE URLShortenerService
+RECTANGLE ShortCodeGenerator
+RECTANGLE URLRepository
+RECTANGLE URLMapping
+RECTANGLE UtilValidator
+
+User --> URLShortenerService : shortenUrl(), getOriginalUrl()
+URLShortenerService --> ShortCodeGenerator : generateShortCode()
+URLShortenerService --> URLRepository : save(), findByShortCode(), findByLongUrl()
+URLRepository --> URLMapping : stores
+URLShortenerService --> UtilValidator : validate()
+
+@enduml
+
