@@ -224,3 +224,144 @@ Spring is a comprehensive framework for building Java applications, especially e
 
 ---
 
+## 12. Java Multithreading & Concurrency
+
+### Core Concepts
+- **Thread**: Smallest unit of execution. Created by extending `Thread` or implementing `Runnable`/`Callable`.
+- **Synchronization**: Ensures only one thread accesses a resource at a time. Use `synchronized` keyword or locks.
+- **Thread Safety**: Code behaves correctly when accessed by multiple threads.
+- **Volatile**: Ensures visibility of changes to variables across threads.
+- **Atomic Operations**: Performed as a single unit (e.g., `AtomicInteger`).
+- **Executors**: Framework for managing thread pools (`ExecutorService`, `ScheduledExecutorService`).
+- **Future/CompletableFuture**: Handle async computation results.
+
+### Example: Creating Threads
+```java
+// Using Runnable
+Thread t = new Thread(() -> System.out.println("Hello from thread!"));
+t.start();
+
+// Using ExecutorService
+ExecutorService executor = Executors.newFixedThreadPool(2);
+executor.submit(() -> doWork());
+executor.shutdown();
+```
+
+### Best Practices
+- Minimize shared mutable state.
+- Use thread-safe collections (`ConcurrentHashMap`, `CopyOnWriteArrayList`).
+- Prefer higher-level concurrency utilities (Executors, Futures).
+- Avoid deadlocks by acquiring locks in a consistent order.
+
+### Common Interview Questions
+- What is the difference between `synchronized` and `Lock`?
+- How does `volatile` work?
+- What is a deadlock and how do you prevent it?
+- How do you create a thread pool in Java?
+
+---
+
+## 13. Kafka & Messaging
+
+### Core Concepts
+- **Kafka**: Distributed event streaming platform for high-throughput, fault-tolerant messaging.
+- **Producer**: Sends messages to Kafka topics.
+- **Consumer**: Reads messages from topics.
+- **Topic**: Logical channel for messages.
+- **Partition**: Subdivision of a topic for parallelism and scalability.
+- **Offset**: Position of a message in a partition.
+- **Consumer Group**: Set of consumers sharing the load.
+- **Delivery Semantics**: At-most-once, at-least-once, exactly-once.
+
+### Example: Kafka Producer (Java)
+```java
+Properties props = new Properties();
+props.put("bootstrap.servers", "localhost:9092");
+props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+KafkaProducer<String, String> producer = new KafkaProducer<>(props);
+producer.send(new ProducerRecord<>("my-topic", "key", "value"));
+producer.close();
+```
+
+### Spring Kafka Example
+```java
+@Service
+public class MyProducer {
+    @Autowired
+    private KafkaTemplate<String, String> kafkaTemplate;
+    public void send(String msg) {
+        kafkaTemplate.send("my-topic", msg);
+    }
+}
+```
+
+### Best Practices
+- Use partitions for scalability.
+- Handle consumer offsets carefully.
+- Use idempotent producers for exactly-once semantics.
+- Monitor lag and throughput.
+
+### Common Interview Questions
+- How does Kafka ensure durability and fault tolerance?
+- What is the difference between a topic and a partition?
+- How do consumer groups work?
+- How do you achieve exactly-once delivery?
+
+---
+
+## 14. Microservices Patterns
+
+### Key Patterns
+- **API Gateway**: Single entry point for clients, handles routing, security, rate limiting.
+- **Service Discovery**: Dynamic registration and lookup of services (Eureka, Consul, Kubernetes).
+- **Circuit Breaker**: Prevents cascading failures (Hystrix, Resilience4j).
+- **Bulkhead**: Isolates failures in one part of the system.
+- **Saga**: Manages distributed transactions via a sequence of local transactions and compensating actions.
+- **CQRS (Command Query Responsibility Segregation)**: Separate models for reading and writing data.
+- **Event Sourcing**: Persist state changes as a sequence of events.
+
+### Example: Circuit Breaker with Resilience4j
+```java
+@CircuitBreaker(name = "myService", fallbackMethod = "fallback")
+public String callRemoteService() {
+    // call remote service
+}
+public String fallback(Throwable t) {
+    return "Fallback response";
+}
+```
+
+### Best Practices
+- Design for failure (timeouts, retries, fallbacks).
+- Use centralized configuration and logging.
+- Secure inter-service communication (OAuth2, mTLS).
+- Automate deployment and scaling (CI/CD, containers, Kubernetes).
+
+### Common Interview Questions
+- What is the API Gateway pattern and why is it used?
+- How do you handle distributed transactions in microservices?
+- What is the difference between orchestration and choreography in Sagas?
+- How do you secure communication between microservices?
+
+---
+
+[See detailed notes for each section:]
+
+- [1. Core Spring Concepts](1-core-spring-concepts.md)
+- [2. Spring Bean Lifecycle](2-spring-bean-lifecycle.md)
+- [3. Aspect-Oriented Programming (AOP)](3-aop.md)
+- [4. Spring MVC](4-spring-mvc.md)
+- [5. REST with Spring](5-rest-with-spring.md)
+- [6. Spring Boot Basics](6-spring-boot-basics.md)
+- [7. Spring Boot Testing](7-spring-boot-testing.md)
+- [8. Data Management & JDBC](8-data-management-jdbc.md)
+- [9. Spring Data JPA](9-spring-data-jpa.md)
+- [10. Spring Cloud](10-spring-cloud.md)
+- [11. Spring Security](11-spring-security.md)
+- [12. Java Multithreading & Concurrency](12-java-multithreading-concurrency.md)
+- [13. Kafka & Messaging](13-kafka-messaging.md)
+- [14. Microservices Patterns](14-microservices-patterns.md)
+
+---
+
