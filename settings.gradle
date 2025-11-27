@@ -1,2 +1,5 @@
 rootProject.name = 'JavaDemos'
 include 'url-shortner'
+
+include 'chat-storage-system'
+include 'chat-storage-system'
