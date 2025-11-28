@@ -6,18 +6,20 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class MessageDto {
+public class MessageResponse {
     private UUID id;
-    private UUID conversationId;
+    private UUID sessionId;
     private UUID senderId;
+    private String role;
     private String content;
-    private String contentType;
+    private String context;
     private Instant createdAt;
+    private List<String> attachments;
 }
-

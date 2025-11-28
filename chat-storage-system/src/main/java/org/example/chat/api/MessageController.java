@@ -1,52 +1,44 @@
 package org.example.chat.api;
 
-import org.example.chat.api.dto.MessageDto;
-import org.springframework.http.HttpStatus;
+import jakarta.validation.Valid;
+import org.example.chat.api.dto.CreateMessageRequest;
+import org.example.chat.api.dto.MessageResponse;
+import org.example.chat.service.MessageService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.Instant;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1")
+@Validated
 public class MessageController {
 
-    // In-memory store for Phase-0 MVP
-    private final Map<UUID, List<MessageDto>> store = new ConcurrentHashMap<>();
+    private final MessageService messageService;
 
-    @PostMapping("/conversations/{conversationId}/messages")
-    public ResponseEntity<MessageDto> postMessage(@PathVariable UUID conversationId,
-                                                  @RequestBody MessageDto req) {
-        UUID id = UUID.randomUUID();
-        Instant now = Instant.now();
-        MessageDto msg = new MessageDto(id, conversationId, req.getSenderId(), req.getContent(),
-                req.getContentType() == null ? "text" : req.getContentType(), now);
-        store.computeIfAbsent(conversationId, k -> new CopyOnWriteArrayList<>()).add(0, msg);
-        return ResponseEntity.status(HttpStatus.CREATED).body(msg);
+    public MessageController(MessageService messageService) {
+        this.messageService = messageService;
     }
 
-    @GetMapping("/conversations/{conversationId}/messages")
-    public ResponseEntity<List<MessageDto>> listMessages(@PathVariable UUID conversationId,
-                                                         @RequestParam(defaultValue = "50") int limit) {
-        List<MessageDto> list = store.getOrDefault(conversationId, Collections.emptyList());
-        int to = Math.min(limit, list.size());
-        return ResponseEntity.ok(list.subList(0, to));
+    @PostMapping("/sessions/{sessionId}/messages")
+    public ResponseEntity<MessageResponse> postMessage(@PathVariable UUID sessionId,
+                                                       @Valid @RequestBody CreateMessageRequest req) {
+        MessageResponse msg = messageService.addMessage(sessionId, req);
+        return ResponseEntity.status(201).body(msg);
+    }
+
+    @GetMapping("/sessions/{sessionId}/messages")
+    public ResponseEntity<List<MessageResponse>> listMessages(@PathVariable UUID sessionId,
+                                                               @RequestParam(defaultValue = "50") int limit) {
+        List<MessageResponse> list = messageService.listMessages(sessionId, limit);
+        return ResponseEntity.ok(list);
     }
 
     @GetMapping("/messages/{id}")
-    public ResponseEntity<MessageDto> getMessage(@PathVariable UUID id) {
-        // naive linear scan for MVP
-        for (List<MessageDto> msgs : store.values()) {
-            for (MessageDto m : msgs) {
-                if (m.getId().equals(id)) {
-                    return ResponseEntity.ok(m);
-                }
-            }
-        }
-        return ResponseEntity.notFound().build();
+    public ResponseEntity<MessageResponse> getMessage(@PathVariable UUID id) {
+        MessageResponse m = messageService.getMessage(id);
+        return ResponseEntity.ok(m);
     }
 }
-

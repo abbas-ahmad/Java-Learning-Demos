@@ -12,12 +12,11 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class MessageDto {
+public class SessionResponse {
     private UUID id;
-    private UUID conversationId;
-    private UUID senderId;
-    private String content;
-    private String contentType;
+    private String title;
+    private UUID userId;
+    private boolean favorite;
     private Instant createdAt;
+    private Instant updatedAt;
 }
-

@@ -14,5 +14,7 @@ API endpoints (local):
 - GET /api/v1/conversations/{conversationId}/messages
 - GET /api/v1/messages/{id}
 
-This MVP uses an in-memory store for messages; Phase 1 will add Postgres, Flyway, and Kafka-based ingestion.
+Swagger / OpenAPI
+- After the app starts, open Swagger UI: http://localhost:8080/swagger-ui.html
 
+This MVP uses an in-memory store for messages; Phase 1 will add Postgres, Flyway, and Kafka-based ingestion.
